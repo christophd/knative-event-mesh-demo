@@ -1,0 +1,20 @@
+# oc create secret generic aws-credentials-secret --from-literal=aws.accessKey=<accessKey> --from-literal=aws.secretKey=<secretKey>
+---
+apiVersion: sources.knative.dev/v1alpha1
+kind: IntegrationSource
+metadata:
+  name: aws-s3-source
+spec:
+  aws:
+    s3:
+      arn: arn:aws:s3:::knative-camel-demo
+      region: us-east-1
+    auth:
+      secret:
+        ref:
+          name: "aws-credentials-secret"
+  sink:
+    ref:
+      apiVersion: eventing.knative.dev/v1
+      kind: Broker
+      name: default

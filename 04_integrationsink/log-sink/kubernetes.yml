@@ -1,0 +1,28 @@
+---
+apiVersion: sinks.knative.dev/v1alpha1
+kind: IntegrationSink
+metadata:
+  name: log-sink
+spec:
+  log:
+    showHeaders: true
+    multiline: true
+    level: INFO
+---
+apiVersion: eventing.knative.dev/v1
+kind: Trigger
+metadata:
+  annotations:
+    eventing.knative.dev/creator: kn-connectors
+  labels:
+    eventing.knative.dev/connector: log-sink
+    eventing.knative.dev/broker: default
+    app.kubernetes.io/name: log-sink
+  name: log-sink
+spec:
+  broker: default
+  subscriber:
+    ref:
+      apiVersion: sinks.knative.dev/v1alpha1
+      kind: IntegrationSink
+      name: log-sink

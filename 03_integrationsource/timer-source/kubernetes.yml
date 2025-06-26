@@ -1,0 +1,14 @@
+---
+apiVersion: sources.knative.dev/v1alpha1
+kind: IntegrationSource
+metadata:
+  name: timer-source
+spec:
+  timer:
+    period: 2000
+    message: "Hello, Knative Eventing"
+  sink:
+    ref:
+      apiVersion: eventing.knative.dev/v1
+      kind: Broker
+      name: default

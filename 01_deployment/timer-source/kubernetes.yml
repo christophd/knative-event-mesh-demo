@@ -1,0 +1,71 @@
+# oc set env deployment/timer-source CAMEL_KAMELET_TIMER_SOURCE_MESSAGE="Camel rocks"
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    eventing.knative.dev/connector: timer-source
+    app.kubernetes.io/name: timer-source
+  name: timer-source
+spec:
+  selector:
+    matchLabels:
+      eventing.knative.dev/connector: timer-source
+      app.kubernetes.io/name: timer-source
+  template:
+    metadata:
+      labels:
+        eventing.knative.dev/connector: timer-source
+        app.kubernetes.io/name: timer-source
+    spec:
+      containers:
+        - env:
+            - name: CAMEL_KAMELET_TIMER_SOURCE_MESSAGE
+              value: Hello from timer source!
+            - name: CAMEL_KAMELET_TIMER_SOURCE_PERIOD
+              value: "1000"
+          image: quay.io/openshift-knative/timer-source:1.0-SNAPSHOT
+          imagePullPolicy: IfNotPresent
+          name: timer-source
+          ports:
+            - containerPort: 8080
+              name: http
+              protocol: TCP
+          readinessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /q/health/ready
+              port: 8080
+              scheme: HTTP
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 10
+          startupProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /q/health/started
+              port: 8080
+              scheme: HTTP
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 10
+---
+apiVersion: sources.knative.dev/v1
+kind: SinkBinding
+metadata:
+  labels:
+    eventing.knative.dev/connector: timer-source
+    app.kubernetes.io/name: timer-source
+  name: timer-source
+spec:
+  sink:
+    ref:
+      apiVersion: eventing.knative.dev/v1
+      kind: Broker
+      name: default
+  subject:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: timer-source
